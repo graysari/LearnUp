@@ -1,15 +1,22 @@
 
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Pressable
+} from 'react-native';
+
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useUser } from '../../../context/UserContext';
 import { getDailyChallenge } from '../../../services/subjects/subjectApi';
+import { DailyTaskSkeleton } from './HomeSkeleton';
 
 export default function DailyChallengeCard() {
-
-    const [expanded, setExpanded] = useState(false);
+    const [dailyTaskLoading, setDailyTaskLoading] = useState(true);
+    const [expanded, setExpanded] = useState(true);
 
     const {
         user,
@@ -27,7 +34,7 @@ export default function DailyChallengeCard() {
         ? (completedTasks / totalTasks) * 100
         : 0;
 
-    // FETCH DAILY CHALLENGE
+    // FETCH DAILY TASK
     useFocusEffect(
         useCallback(() => {
             if (!user?.userId) return;
@@ -35,27 +42,28 @@ export default function DailyChallengeCard() {
             let active = true;
 
             const loadDailyChallenge = async () => {
-                try {
-                    const data = await getDailyChallenge(user.userId);
+    setDailyTaskLoading(true);
 
-                    if (active) {
-                        setSubjectDailyTask(data);
-                    }
+    try {
+        const data = await getDailyChallenge(user.userId);
 
-                } catch (error) {
-                    console.log(
-                        'Daily Challenge Error:',
-                        error.message
-                    );
-                }
-            };
+        if (active) {
+            setSubjectDailyTask(data);
+        }
+    } catch (error) {
+        console.log('Daily Task Error:', error.message);
+    } finally {
+        if (active) {
+            setDailyTaskLoading(false);
+        }
+    }
+};
 
             loadDailyChallenge();
 
             return () => {
                 active = false;
             };
-
         }, [user?.userId, setSubjectDailyTask])
     );
 
@@ -68,51 +76,39 @@ export default function DailyChallengeCard() {
                 <View style={styles.dailyTaskIcon}>
                     <Ionicons
                         name="calendar-outline"
-                        size={22}
+                        size={20}
                         color="#6366F1"
                     />
                 </View>
 
                 <View style={styles.headerContent}>
-
                     <Text style={styles.dailyTaskTitle}>
-                        Daily Challenge
+                        Daily Task
                     </Text>
 
                     <Text style={styles.dailyTaskDate}>
                         {new Date().toLocaleDateString('en-US', {
-                            month: 'short',
+                            month: 'long',
                             day: 'numeric',
                             year: 'numeric',
                         })}
                     </Text>
-
                 </View>
 
-                {/* EXPAND / COLLAPSE ARROW */}
                 <Pressable
                     onPress={() => setExpanded(prev => !prev)}
-                    style={({ pressed }) => [
-                        styles.headerExpandButton,
-                        pressed && styles.buttonPressed
-                    ]}
+                    style={styles.headerExpandButton}
                     accessibilityRole="button"
                     accessibilityLabel={
                         expanded
-                            ? 'Collapse daily challenge'
-                            : 'Expand daily challenge'
+                            ? 'Collapse daily task'
+                            : 'Expand daily task'
                     }
                     accessibilityState={{ expanded }}
                 >
-                    <Ionicons
-                        name={
-                            expanded
-                                ? 'chevron-up'
-                                : 'chevron-down'
-                        }
-                        size={24}
-                        color="#6366F1"
-                    />
+                    <Text style={styles.headerBadgeText}>
+                        Daily progress
+                    </Text>
                 </Pressable>
 
             </View>
@@ -130,7 +126,7 @@ export default function DailyChallengeCard() {
                 </Text>
 
                 <Text style={styles.progressDescription}>
-                    Subjects completed
+                    subjects completed
                 </Text>
 
             </View>
@@ -155,35 +151,38 @@ export default function DailyChallengeCard() {
                         >
 
                             <View style={styles.taskSubject}>
-
                                 <Ionicons
                                     name={
-                                        item.subjectIcon ||
-                                        'book-outline'
+                                        item.isFinish
+                                            ? 'checkmark-circle-outline'
+                                            : 'ellipse-outline'
                                     }
-                                    size={20}
-                                    color="#6366F1"
+                                    size={15}
+                                    color={
+                                        item.isFinish
+                                            ? '#22C55E'
+                                            : '#CBD5E1'
+                                    }
                                 />
 
-                                <Text style={styles.taskText}>
+                                <Text
+                                    style={styles.taskText}
+                                    numberOfLines={2}
+                                >
                                     {item.subjectName}
                                 </Text>
-
                             </View>
 
-                            <Ionicons
-                                name={
-                                    item.isFinish
-                                        ? 'checkmark-circle'
-                                        : 'ellipse-outline'
-                                }
-                                size={24}
-                                color={
-                                    item.isFinish
-                                        ? '#16A34A'
-                                        : '#CBD5E1'
-                                }
-                            />
+                            <Text
+                                style={[
+                                    styles.taskStatus,
+                                    item.isFinish && styles.taskStatusDone
+                                ]}
+                            >
+                                {item.isFinish
+                                    ? 'Completed'
+                                    : 'Not completed'}
+                            </Text>
 
                         </View>
                     ))}
@@ -191,32 +190,21 @@ export default function DailyChallengeCard() {
                 </View>
             )}
 
-            {/* SHOW MORE / SHOW LESS */}
-            {totalTasks > 0 && (
-                <Pressable
-                    onPress={() => setExpanded(prev => !prev)}
-                    style={({ pressed }) => [
-                        styles.expandButton,
-                        pressed && styles.buttonPressed
-                    ]}
-                >
-                    <Text style={styles.expandButtonText}>
-                        {expanded
-                            ? 'Show Less'
-                            : 'Show All Subjects'}
-                    </Text>
+            {/* FOOTER */}
+            {expanded && (
+                <View style={styles.footer}>
 
                     <Ionicons
-                        name={
-                            expanded
-                                ? 'chevron-up'
-                                : 'chevron-down'
-                        }
-                        size={18}
-                        color="#6366F1"
+                        name="information-circle-outline"
+                        size={15}
+                        color="#94A3B8"
                     />
 
-                </Pressable>
+                    <Text style={styles.footerText}>
+                        Progress updates automatically after completing a quiz.
+                    </Text>
+
+                </View>
             )}
 
         </View>
@@ -227,7 +215,7 @@ const styles = StyleSheet.create({
 
     dailyTaskCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 16,
         borderWidth: 1,
         borderColor: '#E2E8F0',
@@ -242,9 +230,8 @@ const styles = StyleSheet.create({
     },
 
     dailyTaskIcon: {
-        backgroundColor: '#EEF2FF',
-        padding: 8,
-        borderRadius: 10,
+        width: 30,
+        height: 30,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -254,121 +241,129 @@ const styles = StyleSheet.create({
     },
 
     dailyTaskTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '700',
         color: '#1E293B',
     },
 
     dailyTaskDate: {
-        fontSize: 12,
-        color: '#64748B',
-        marginTop: 3,
+        fontSize: 11,
+        color: '#94A3B8',
+        marginTop: 4,
     },
 
     headerExpandButton: {
-        width: 40,
-        height: 40,
+        backgroundColor: '#F1F5F9',
+        borderRadius: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 7,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius: 12,
-        backgroundColor: '#F8FAFC',
+    },
+
+    headerBadgeText: {
+        fontSize: 10,
+        color: '#64748B',
+        fontWeight: '500',
     },
 
     // DESCRIPTION
     dailyTaskDescription: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#64748B',
-        marginTop: 12,
-        lineHeight: 20,
+        marginTop: 14,
+        lineHeight: 19,
     },
 
     // PROGRESS
     progressLabel: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        gap: 10,
-        marginTop: 20,
+        gap: 8,
+        marginTop: 14,
     },
 
     progressCount: {
-        fontSize: 26,
+        fontSize: 22,
         fontWeight: '700',
         color: '#1E293B',
     },
 
     progressDescription: {
-        fontSize: 13,
-        color: '#64748B',
-        flexShrink: 1,
+        fontSize: 11,
+        color: '#94A3B8',
     },
 
     progressTrack: {
-        height: 8,
+        height: 6,
         backgroundColor: '#E2E8F0',
-        borderRadius: 8,
+        borderRadius: 10,
         overflow: 'hidden',
-        marginTop: 10,
-        marginBottom: 12,
+        marginTop: 12,
     },
 
     progressFill: {
         height: '100%',
         backgroundColor: '#6366F1',
-        borderRadius: 8,
+        borderRadius: 10,
     },
 
     // SUBJECT LIST
     subjectListContainer: {
-        marginTop: 6,
-        marginBottom: 4,
+        marginTop: 4,
     },
 
     taskItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#F8FAFC',
-        paddingHorizontal: 14,
-        paddingVertical: 12,
-        borderRadius: 10,
-        marginBottom: 6,
+        paddingVertical: 17,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+        gap: 8,
     },
 
     taskSubject: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 9,
         flex: 1,
-        marginRight: 8,
     },
 
     taskText: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: '500',
-        color: '#1E293B',
+        color: '#334155',
         flexShrink: 1,
     },
 
-    // SHOW MORE BUTTON
-    expandButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
-        marginTop: 4,
+    taskStatus: {
+        fontSize: 11,
+        color: '#94A3B8',
     },
 
-    expandButtonText: {
-        fontSize: 14,
+    taskStatusDone: {
+        color: '#16A34A',
         fontWeight: '600',
-        color: '#6366F1',
     },
 
-    buttonPressed: {
-        opacity: 0.6,
+    // FOOTER
+    footer: {
+        backgroundColor: '#F8FAFC',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 8,
+        marginTop: 12,
+    },
+
+    footerText: {
+        fontSize: 11,
+        color: '#64748B',
+        lineHeight: 16,
+        flex: 1,
     },
 
 });

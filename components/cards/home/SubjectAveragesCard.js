@@ -32,15 +32,15 @@ export default function SubjectAveragesCard({ subjects = [] }) {
 
                 <View style={styles.iconBox}>
                     <Ionicons
-                        name="stats-chart-outline"
-                        size={22}
+                        name="stats-chart"
+                        size={20}
                         color="#6366F1"
                     />
                 </View>
 
                 <View style={styles.headerContent}>
                     <Text style={styles.title}>
-                        Subject Averages
+                        Subject Performance
                     </Text>
 
                     <Text style={styles.subtitle}>
@@ -64,7 +64,7 @@ export default function SubjectAveragesCard({ subjects = [] }) {
                                 ? 'chevron-up'
                                 : 'chevron-down'
                         }
-                        size={22}
+                        size={20}
                         color="#6366F1"
                     />
                 </Pressable>
@@ -73,85 +73,98 @@ export default function SubjectAveragesCard({ subjects = [] }) {
 
             {/* SUBJECT LIST */}
             {expanded && (
-                <View style={styles.subjectList}>
+                <>
+                    <View style={styles.divider} />
 
-                    {subjects.map((subject) => {
+                    <View style={styles.subjectList}>
 
-                        const average = subject.averageGrade;
+                        {subjects.map((subject) => {
 
-                        const hasGrade =
-                            average !== null &&
-                            average !== undefined;
+                            const average = subject.averageGrade;
 
-                        const color = getProgressColor(average);
+                            const hasGrade =
+                                average !== null &&
+                                average !== undefined;
 
-                        return (
-                            <View
-                                key={subject.id}
-                                style={styles.subjectItem}
-                            >
+                            const color = getProgressColor(average);
 
-                                <View style={styles.subjectHeader}>
+                            const progress = hasGrade
+                                ? Math.max(0, Math.min(100, average))
+                                : 0;
 
-                                    <Ionicons
-                                        name={
-                                            subject.icon ||
-                                            'book-outline'
-                                        }
-                                        size={21}
-                                        color="#6366F1"
-                                    />
+                            return (
+                                <View
+                                    key={subject.id}
+                                    style={styles.subjectItem}
+                                >
 
-                                    <View style={styles.subjectInfo}>
+                                    {/* SUBJECT NAME */}
+                                    <View style={styles.subjectHeader}>
 
-                                        <Text style={styles.subjectName}>
+                                        <Ionicons
+                                            name={
+                                                subject.icon ||
+                                                'book-outline'
+                                            }
+                                            size={14}
+                                            color="#6366F1"
+                                        />
+
+                                        <Text
+                                            style={styles.subjectName}
+                                            numberOfLines={2}
+                                        >
                                             {subject.name}
-                                        </Text>
-
-                                        <Text style={styles.topicCount}>
-                                            {subject.takenTopicCount} of{' '}
-                                            {subject.topicCount} topics attempted
                                         </Text>
 
                                     </View>
 
-                                    <Text
-                                        style={[
-                                            styles.averageText,
-                                            { color }
-                                        ]}
-                                    >
+                                    {/* AVERAGE */}
+                                    <Text style={styles.averageText}>
                                         {hasGrade
-                                            ? `${average.toFixed(1)}%`
-                                            : 'No grade yet'}
+                                            ? `${Number(average).toFixed(0)}%`
+                                            : '—'}
+                                    </Text>
+
+                                    {/* PROGRESS BAR */}
+                                    <View style={styles.progressTrack}>
+                                        <View
+                                            style={[
+                                                styles.progressFill,
+                                                {
+                                                    width: `${progress}%`
+                                                }
+                                            ]}
+                                        />
+                                    </View>
+
+                                    {/* TOPIC COUNT */}
+                                    <Text style={styles.topicCount}>
+                                        {subject.takenTopicCount} of{' '}
+                                        {subject.topicCount} topics attempted
                                     </Text>
 
                                 </View>
+                            );
+                        })}
 
-                                <View style={styles.progressTrack}>
-                                    <View
-                                        style={[
-                                            styles.progressFill,
-                                            {
-                                                width: `${
-                                                    hasGrade
-                                                        ? Math.max(
-                                                            0,
-                                                            Math.min(100, average)
-                                                        )
-                                                        : 0
-                                                }%`,
-                                                backgroundColor: color
-                                            }
-                                        ]}
-                                    />
-                                </View>
+                    </View>
 
-                            </View>
-                        );
-                    })}
+                    {/* FOOTER */}
+                    <View style={styles.footer}>
 
-                </View>
+                        <Ionicons
+                            name="information-circle-outline"
+                            size={14}
+                            color="#94A3B8"
+                        />
+
+                        <Text style={styles.footerText}>
+                            Based on the best score for each attempted topic.
+                        </Text>
+
+                    </View>
+                </>
             )}
 
         </View>
@@ -162,7 +175,7 @@ const styles = StyleSheet.create({
 
     card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 16,
         borderWidth: 1,
         borderColor: '#E2E8F0',
@@ -176,9 +189,12 @@ const styles = StyleSheet.create({
     },
 
     iconBox: {
+        width: 40,
+        height: 40,
         backgroundColor: '#EEF2FF',
-        padding: 9,
-        borderRadius: 10,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 
     headerContent: {
@@ -186,72 +202,99 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '700',
-        color: '#0F172A',
+        color: '#1E293B',
     },
 
     subtitle: {
-        fontSize: 12,
-        color: '#64748B',
-        marginTop: 3,
+        fontSize: 11,
+        color: '#94A3B8',
+        marginTop: 4,
     },
 
     expandButton: {
-        width: 40,
-        height: 40,
-        backgroundColor: '#F8FAFC',
-        borderRadius: 12,
+        width: 28,
+        height: 36,
         alignItems: 'center',
         justifyContent: 'center',
     },
 
-    subjectList: {
+    divider: {
+        height: 1,
+        backgroundColor: '#E2E8F0',
         marginTop: 18,
+        marginBottom: 22,
+    },
+
+    subjectList: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        rowGap: 26,
     },
 
     subjectItem: {
-        marginBottom: 18,
+        width: '47%',
     },
 
     subjectHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
-    },
-
-    subjectInfo: {
-        flex: 1,
+        gap: 6,
+        minHeight: 20,
     },
 
     subjectName: {
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: '600',
-        color: '#1E293B',
-    },
-
-    topicCount: {
-        fontSize: 12,
-        color: '#94A3B8',
-        marginTop: 3,
+        color: '#334155',
+        flexShrink: 1,
     },
 
     averageText: {
-        fontSize: 14,
+        fontSize: 22,
         fontWeight: '700',
+        color: '#6366F1',
+        marginTop: 8,
+        marginBottom: 9,
     },
 
     progressTrack: {
-        height: 7,
+        height: 6,
         backgroundColor: '#E2E8F0',
-        borderRadius: 8,
+        borderRadius: 10,
         overflow: 'hidden',
-        marginTop: 10,
+        width: '100%',
     },
 
     progressFill: {
         height: '100%',
-        borderRadius: 8,
+        backgroundColor: '#6366F1',
+        borderRadius: 10,
+    },
+
+    topicCount: {
+        fontSize: 10,
+        color: '#94A3B8',
+        marginTop: 7,
+    },
+
+    footer: {
+        borderTopWidth: 1,
+        borderTopColor: '#E2E8F0',
+        marginTop: 28,
+        paddingTop: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 7,
+    },
+
+    footerText: {
+        fontSize: 10,
+        color: '#94A3B8',
+        flexShrink: 1,
     },
 
 });
+ 

@@ -11,6 +11,12 @@ import EditProfile from './screens/EditProfile';
 import AdminPanel from './screens/AdminPanel';
 import ManageSubjects from './screens/ManageSubjects';
 import AddSubject from './screens/AddSubjects';
+import ManageTopics from './screens/ManageTopics';
+import AddTopic from './screens/AddTopic';
+import ManageQuestions from './screens/ManageQuestions';
+import AddQuestion from './screens/AddQuestion';
+import CreateAccount from './screens/CreateAccount';
+import ForgetPassword from './screens/ForgetPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +49,44 @@ export default function App() {
             options={{ headerShown: false }}
           />
 
+           <Stack.Screen
+            name="ManageTopics"
+            component={ManageTopics}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name="AddTopic"
+            component={AddTopic}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+    name="ManageQuestions"
+    component={ManageQuestions}
+    options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="AddQuestion"
+  component={AddQuestion}
+  options={{ headerShown: false }}
+/>
+
+
+<Stack.Screen
+  name="CreateAccount"
+  component={CreateAccount}
+  options={{ headerShown: false }}
+/>
+
+
+<Stack.Screen
+  name="ForgetPassword"
+  component={ForgetPassword}
+  options={{ headerShown: false }}
+/>
+ 
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>

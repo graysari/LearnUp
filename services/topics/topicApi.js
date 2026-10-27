@@ -10,6 +10,20 @@ export const getTopics = async (subjectId) => {
     throw `/Topics/${subjectId} + subjectId + "ngaopngaongao" + error`;
   }
 };
+export const deleteTopic = async (topicId) => {
+    const response = await api.delete(`/Topic/${topicId}`);
+    return response.data;
+};
+
+export const editTopic = async (topicId, payload) => {
+    const response = await api.put(
+        `/Topic/${topicId}`,
+        payload
+    );
+
+    return response.data;
+};
+
 
 export const getTopicWithGrades = async (subjectId, userId) => {
   try{
@@ -27,3 +41,15 @@ export const getTopicWithGrades = async (subjectId, userId) => {
   }
 
 }
+export const addTopic = async (payload) => {
+    try {
+        const response = await api.post('/Topic', payload);
+        return response.data;
+    } catch (error) {
+        console.log(
+            'Add topic error:',
+            error.response?.data ?? error.message
+        );
+        throw error;
+    }
+};

@@ -1,4 +1,5 @@
 import api from '../api';
+
 export const getSubjects = async () => {
     try {
         const response = await api.get(`/Subjects`);
@@ -7,6 +8,13 @@ export const getSubjects = async () => {
         console.error('Error fetching subjects:', error);
         throw error;
     }
+};
+export const deleteSubject = async (subjectId) => {
+    const response = await api.delete(
+        `/Subjects/${subjectId}`
+    );
+
+    return response.data;
 };
 
 export const getDailyChallenge = async (userId) => {
@@ -61,3 +69,4 @@ export const editSubject = async (subjectId, payload) => {
     );
     return response.data;
 };
+
